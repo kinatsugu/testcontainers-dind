@@ -1,0 +1,30 @@
+services:
+  # app サービス
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    tty: true
+    volumes:
+      - type: bind
+        source: ./
+        target: /workspace
+    environment:
+      - DOCKER_HOST=tcp://dind:2375  # Docker-in-Docker サービスを指定
+
+
+  # Docker-in-Docker サービス
+  dind:
+    image: docker:24-dind
+    privileged: true  # 特権モードが必要
+    environment:
+      - DOCKER_TLS_CERTDIR=  # 無効化しないと動作しない
+    volumes:
+      - type: volume
+        source: dind-storage
+        target: /var/lib/docker  # Docker データの永続化用（オプション）
+
+
+volumes:
+  dind-storage:
+    driver: local
